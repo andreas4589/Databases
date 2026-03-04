@@ -1,0 +1,123 @@
+-- 1. Create independent tables first
+CREATE TABLE University (
+    university_id INTEGER NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    CONSTRAINT University_pk PRIMARY KEY (university_id)
+);
+
+CREATE TABLE Landlord (
+    landlord_id INTEGER NOT NULL,
+    organization_name VARCHAR(100) NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    contact_details VARCHAR(100) NOT NULL,
+    CONSTRAINT Landlord_pk PRIMARY KEY (landlord_id)
+);
+
+CREATE TABLE Facility (
+    facility_id INTEGER NOT NULL,
+    facility_type VARCHAR(100) NOT NULL,
+    description VARCHAR(100) NOT NULL,
+    CONSTRAINT Facility_pk PRIMARY KEY (facility_id)
+);
+
+CREATE TABLE Room (
+    room_id INTEGER NOT NULL,
+    room_type VARCHAR(100) NOT NULL,
+    surface_area INTEGER NOT NULL,
+    monthly_rent INTEGER NOT NULL,
+    CONSTRAINT Room_pk PRIMARY KEY (room_id)
+);
+
+-- 2. Create the base Person table
+CREATE TABLE Person (
+    person_id INTEGER NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    address VARCHAR(100),
+    gender CHAR(1),
+    date_of_birth DATE,
+    CONSTRAINT Person_pk PRIMARY KEY (person_id),
+    CONSTRAINT CheckGender CHECK (gender IN ('F', 'M', 'O'))
+);
+
+-- 3. Create tables that depend on Person and University
+CREATE TABLE Staff (
+    person_id INTEGER NOT NULL,
+    job_function VARCHAR(100) NOT NULL,
+    salary FLOAT NOT NULL,
+    CONSTRAINT Staff_pk PRIMARY KEY (person_id),
+    CONSTRAINT Staff_fk_Person FOREIGN KEY (person_id) REFERENCES Person(person_id)
+);
+
+CREATE TABLE Student (
+    person_id INTEGER NOT NULL,
+    student_number INTEGER NOT NULL,
+    field_of_study VARCHAR(100) NOT NULL,
+    university_id INTEGER NOT NULL,
+    CONSTRAINT Student_pk PRIMARY KEY (person_id),
+    CONSTRAINT Student_fk_Person FOREIGN KEY (person_id) REFERENCES Person(person_id),
+    CONSTRAINT Student_fk_University FOREIGN KEY (university_id) REFERENCES University(university_id)
+);
+
+-- 4. Create Building (depends on Landlord)
+CREATE TABLE Building (
+    building_id INTEGER NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    number_of_floors INTEGER NOT NULL,
+    max_capacity INTEGER NOT NULL,
+    landlord_id INTEGER NOT NULL,
+    CONSTRAINT Building_pk PRIMARY KEY (building_id),
+    CONSTRAINT Building_fk_Landlord FOREIGN KEY (landlord_id) REFERENCES Landlord(landlord_id)
+);
+
+-- 5. Create Maintenance (depends on Student and Staff)
+CREATE TABLE Maintenance (
+    request_id INTEGER NOT NULL,
+    submission_date DATE NOT NULL,
+    description VARCHAR(100) NOT NULL,
+    priority_status VARCHAR(100) NOT NULL,
+    student_id INTEGER NOT NULL,
+    staff_id INTEGER NOT NULL,
+    CONSTRAINT Maintenance_pk PRIMARY KEY (request_id),
+    CONSTRAINT Maintenance_fk_Student FOREIGN KEY (student_id) REFERENCES Student(person_id),
+    CONSTRAINT Maintenance_fk_Staff FOREIGN KEY (staff_id) REFERENCES Staff(person_id)
+);
+
+-- 6. Create Contract (depends on Student and Room)
+CREATE TABLE Contract (
+    contract_id INTEGER NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    monthly_rent INTEGER NOT NULL,
+    deposit INTEGER NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    person_id INTEGER NOT NULL, 
+    room_id INTEGER NOT NULL,      
+    CONSTRAINT Contract_pk PRIMARY KEY (contract_id),
+    CONSTRAINT Contract_fk_Student FOREIGN KEY (person_id) REFERENCES Student(person_id),
+    CONSTRAINT Contract_fk_Room FOREIGN KEY (room_id) REFERENCES Room(room_id),
+    CONSTRAINT Datechecker CHECK (end_date > start_date)
+);
+
+-- 7. Create Payment (depends on Contract)
+CREATE TABLE Payment (
+    payment_id INTEGER NOT NULL,
+    amount INTEGER NOT NULL,
+    payment_date DATE NOT NULL,
+    monthly_rent INTEGER NOT NULL,
+    payment_method VARCHAR(100) NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    contract_id INTEGER NOT NULL,
+    CONSTRAINT Payment_pk PRIMARY KEY (payment_id),
+    CONSTRAINT payment_fk_contract FOREIGN KEY (contract_id) REFERENCES Contract(contract_id)
+);
+
+-- 8. Create Junction table for Room/Facility
+CREATE TABLE Room_to_Facility (
+    room_id INTEGER NOT NULL,
+    facility_id INTEGER NOT NULL,
+    CONSTRAINT Room_to_Facility_pk PRIMARY KEY (room_id, facility_id),
+    CONSTRAINT Room_to_Facility_fk_Room FOREIGN KEY (room_id) REFERENCES Room(room_id),
+    CONSTRAINT Room_to_Facility_fk_Facility FOREIGN KEY (facility_id) REFERENCES Facility(facility_id)
+);
