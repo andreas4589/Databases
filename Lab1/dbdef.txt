@@ -13,6 +13,17 @@ CREATE TABLE Landlord (
     CONSTRAINT Landlord_pk PRIMARY KEY (landlord_id)
 );
 
+CREATE TABLE Building (
+    building_id INTEGER NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    number_of_floors INTEGER NOT NULL,
+    max_capacity INTEGER NOT NULL,
+    landlord_id INTEGER NOT NULL,
+    CONSTRAINT Building_pk PRIMARY KEY (building_id),
+    CONSTRAINT Building_fk_Landlord FOREIGN KEY (landlord_id) 
+	REFERENCES Landlord(landlord_id)
+);
+
 CREATE TABLE Facility (
     facility_id INTEGER NOT NULL,
     facility_type VARCHAR(100) NOT NULL,
@@ -25,7 +36,10 @@ CREATE TABLE Room (
     room_type VARCHAR(100) NOT NULL,
     surface_area INTEGER NOT NULL,
     monthly_rent INTEGER NOT NULL,
-    CONSTRAINT Room_pk PRIMARY KEY (room_id)
+    building_id INTEGER NOT NULL,
+    CONSTRAINT Room_pk PRIMARY KEY (room_id),
+    CONSTRAINT Room_fk_Building FOREIGN KEY (building_id)
+	REFERENCES Building(building_id)
 );
 
 CREATE TABLE Person (
@@ -58,17 +72,6 @@ CREATE TABLE Student (
 	REFERENCES Person(person_id),
     CONSTRAINT Student_fk_University FOREIGN KEY (university_id) 
 	REFERENCES University(university_id)
-);
-
-CREATE TABLE Building (
-    building_id INTEGER NOT NULL,
-    address VARCHAR(100) NOT NULL,
-    number_of_floors INTEGER NOT NULL,
-    max_capacity INTEGER NOT NULL,
-    landlord_id INTEGER NOT NULL,
-    CONSTRAINT Building_pk PRIMARY KEY (building_id),
-    CONSTRAINT Building_fk_Landlord FOREIGN KEY (landlord_id) 
-	REFERENCES Landlord(landlord_id)
 );
 
 CREATE TABLE Maintenance (
